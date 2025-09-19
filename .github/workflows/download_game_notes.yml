@@ -2,9 +2,8 @@ name: Download NBA Game Notes
 
 on:
   schedule:
-    # Every 30 minutes between 7 AM EST and 12 AM EST
-    - cron: "0,30 12-23 * * *"
-    - cron: "0,30 0-5 * * *"
+    # Every 30 minutes, 24 hours a day
+    - cron: "0,30 * * * *"
   workflow_dispatch:     # allow manual runs
 
 # allow pushing commits back to the repo
