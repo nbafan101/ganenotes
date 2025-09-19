@@ -4,10 +4,10 @@ on:
   schedule:
     # Every 30 minutes, 24 hours a day
     - cron: "0,30 * * * *"
-  workflow_dispatch:     # allow manual runs
+  workflow_dispatch:
 
 permissions:
-  contents: write   # allow pushing commits
+  contents: write
 
 jobs:
   download:
@@ -25,9 +25,9 @@ jobs:
       - name: Run R script
         run: Rscript download_game_notes.R
 
-      - name: Add timestamp file (forces a change)
+      - name: Force-update file timestamps
         run: |
-          date -u +"%Y-%m-%d %H:%M:%S UTC" > last_run.txt
+          find nba_game_notes -type f -exec touch {} +
 
       - name: Commit and push changes (always)
         env:
@@ -35,6 +35,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add nba_game_notes/* last_run.txt
+          git add nba_game_notes/*
           git commit -m "Update NBA game notes at $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
           git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} HEAD:${{ github.ref }}
