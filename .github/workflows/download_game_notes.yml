@@ -2,8 +2,12 @@ name: Download NBA Game Notes
 
 on:
   schedule:
-    - cron: "0 * * * *"   # runs every hour on the hour
-  workflow_dispatch:       # allows manual trigger
+    - cron: "0 * * * *"   # every hour on the hour
+  workflow_dispatch:     # manual run
+
+# give the workflow write permissions so the token can push files
+permissions:
+  contents: write
 
 jobs:
   download:
@@ -13,16 +17,20 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Set up R
-        uses: r-lib/actions/setup-r@v2
+      - name: Install R
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y r-base
 
       - name: Run R script
         run: Rscript download_game_notes.R
 
-      - name: Commit and push changes
+      - name: Commit and push changes (only if changed)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add nba_game_notes/*
-          git commit -m "Update NBA game notes PDFs [skip ci]" || echo "No changes to commit"
-          git push
+          # commit only if there are changes staged, then push with token
+          git diff --staged --quiet || (git commit -m "Update NBA game notes PDFs [skip ci]" && git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} HEAD:${{ github.ref }})
