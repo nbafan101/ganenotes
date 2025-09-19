@@ -6,9 +6,8 @@ on:
     - cron: "0,30 * * * *"
   workflow_dispatch:     # allow manual runs
 
-# allow pushing commits back to the repo
 permissions:
-  contents: write
+  contents: write   # allow pushing commits
 
 jobs:
   download:
@@ -26,11 +25,12 @@ jobs:
       - name: Run R script
         run: Rscript download_game_notes.R
 
-      - name: Commit and push changes (only if changed)
+      - name: Commit and push changes (always commit)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add nba_game_notes/*
-          git diff --staged --quiet || (git commit -m "Update NBA game notes PDFs [skip ci]" && git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} HEAD:${{ github.ref }})
+          git commit -m "Update NBA game notes PDFs at $(date -u +"%Y-%m-%d %H:%M:%S UTC")" || echo "No changes, but forcing commit"
+          git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} HEAD:${{ github.ref }}
