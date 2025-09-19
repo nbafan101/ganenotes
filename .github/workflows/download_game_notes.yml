@@ -1,0 +1,28 @@
+name: Download NBA Game Notes
+
+on:
+  schedule:
+    - cron: "0 * * * *"   # runs every hour on the hour
+  workflow_dispatch:       # allows manual trigger
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+
+      - name: Run R script
+        run: Rscript download_game_notes.R
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add nba_game_notes/*
+          git commit -m "Update NBA game notes PDFs [skip ci]" || echo "No changes to commit"
+          git push
